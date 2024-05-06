@@ -1,0 +1,16 @@
+{
+  "web": {
+    "client_id": "182069842542-ffilspgl44vrsiucep6jfgpinsbb4jb0.apps.googleusercontent.com",
+    "project_id": "zad6-pki",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret": "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",
+    "redirect_uris": [
+      "https://zad6-pki.onrender.com/auth/google/callback"
+    ],
+    "javascript_origins": [
+      "https://zad6-pki.onrender.com"
+    ]
+  }
+}
