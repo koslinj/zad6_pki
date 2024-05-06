@@ -1,6 +1,3 @@
-var express = require('express');
-var app = express();
-
 const { google } = require('googleapis');
 const express = require('express')
 const OAuth2Data = require('./google_key.json')
