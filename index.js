@@ -1,8 +1,54 @@
 const { google } = require('googleapis');
 const express = require('express')
 const OAuth2Data = require('./google_key.json')
+const axios = require('axios')
 
 const app = express()
+
+const gh_id = "Ov23lijRmGqTt8kc0iKK"
+const gh_secret = "a18bf140fbe71c24ab823514ef5b44d116683d2e"
+var access_token = "";
+
+// Declare the callback route
+app.get('/github/callback', (req, res) => {
+  const requestToken = req.query.code
+
+  axios({
+    method: 'post',
+    url: `https://github.com/login/oauth/access_token?client_id=${gh_id}&client_secret=${gh_secret}&code=${requestToken}`,
+    // Set the content type header, so that we get the response in JSON
+    headers: {
+      accept: 'application/json'
+    }
+  }).then((response) => {
+    access_token = response.data.access_token
+    res.redirect('/success');
+  })
+})
+
+app.get('/success', function (req, res) {
+
+  axios({
+    method: 'get',
+    url: `https://api.github.com/user`,
+    headers: {
+      Authorization: 'token ' + access_token
+    }
+  }).then((resp) => {
+    res.send(`<h2>${resp.data.login}</h2>
+    <h2>${resp.data.name}</h2>
+    <h2>${resp.data.bio}</h2>
+    <h2>FOLLOWERS: ${resp.data.followers}</h2>
+    <br><a href="/ghsignout">Sign Out</a>`);
+  }).catch((error) => {
+    res.redirect('/');
+  });
+});
+
+app.get("/ghsignout", function (req, res) {
+  access_token = ""
+  res.redirect('/');
+})
 
 const CLIENT_ID = OAuth2Data.web.client_id;
 const CLIENT_SECRET = OAuth2Data.web.client_secret;
@@ -12,7 +58,11 @@ const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_U
 var authed = false;
 
 app.get('/', (req, res) => {
-  res.send('<h1>HOME PAGE</h1><a href="/signin">Sign In with Google</a>');
+  res.send(
+    '<h1>HOME PAGE</h1><a href="/signin">Sign In with Google</a><br/>'
+    +
+    `<a href="https://github.com/login/oauth/authorize?client_id=${gh_id}&prompt=consent">Github Login</a>`
+  );
 });
 
 app.get('/signout', (req, res) => {
