@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 
 app.get('/signout', (req, res) => {
   authed = false;
-  
+
   oAuth2Client.revokeCredentials()
 
   res.redirect('/');
@@ -43,7 +43,9 @@ app.get('/signin', (req, res) => {
         loggedUser = result.data.name
         console.log(loggedUser)
       }
-      res.send('Zalogowany: '.concat(loggedUser, '<img src="', result.data.picture, '"height="23" width="23">'))
+      res.send('Zalogowany: '
+        .concat(loggedUser, '<img src="', result.data.picture, '"height="23" width="23">')
+        + '<br><a href="/signout">Sign Out</a>')
     })
   }
 })
@@ -60,7 +62,7 @@ app.get('/auth/google/callback', function (req, res) {
         console.log('Successfully authenticated');
         oAuth2Client.setCredentials(tokens);
         authed = true;
-        res.redirect('/')
+        res.redirect('/signin')
       }
     });
   }
