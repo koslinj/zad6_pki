@@ -15,6 +15,14 @@ app.get('/', (req, res) => {
   res.send('<h1>HOME PAGE</h1><a href="/signin">Sign In with Google</a>');
 });
 
+app.get('/signout', (req, res) => {
+  authed = false;
+  
+  oAuth2Client.revokeCredentials()
+
+  res.redirect('/');
+});
+
 app.get('/signin', (req, res) => {
   if (!authed) {
     // Generate an OAuth URL and redirect there
