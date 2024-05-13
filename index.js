@@ -5,22 +5,21 @@ const axios = require('axios')
 
 const app = express()
 
-const { Client } = require("pg")
+const { Pool } = require("pg")
 const dotenv = require("dotenv")
 dotenv.config()
 
+const client = new Pool({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  ssl: true
+})
+
 const fetchUsers = async () => {
   try {
-    const client = new Client({
-      user: process.env.PGUSER,
-      host: process.env.PGHOST,
-      database: process.env.PGDATABASE,
-      password: process.env.PGPASSWORD,
-      port: process.env.PGPORT,
-      ssl: true
-    })
-
-    await client.connect()
     const res = await client.query('SELECT * FROM users')
     await client.end()
     return res.rows
