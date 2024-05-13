@@ -21,7 +21,6 @@ const client = new Pool({
 const fetchUsers = async () => {
   try {
     const res = await client.query('SELECT * FROM users')
-    await client.end()
     return res.rows
   } catch (error) {
     console.log(error)
