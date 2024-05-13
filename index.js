@@ -5,6 +5,31 @@ const axios = require('axios')
 
 const app = express()
 
+const { Client } = require("pg")
+const dotenv = require("dotenv")
+dotenv.config()
+
+const fetchUsers = async () => {
+  try {
+    const client = new Client({
+      user: process.env.PGUSER,
+      host: process.env.PGHOST,
+      database: process.env.PGDATABASE,
+      password: process.env.PGPASSWORD,
+      port: process.env.PGPORT,
+      ssl: true
+    })
+
+    await client.connect()
+    const res = await client.query('SELECT * FROM users')
+    await client.end()
+    return res.rows
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
 const gh_id = "Ov23lijRmGqTt8kc0iKK"
 const gh_secret = "a18bf140fbe71c24ab823514ef5b44d116683d2e"
 var access_token = "";
@@ -34,12 +59,22 @@ app.get('/success', function (req, res) {
     headers: {
       Authorization: 'token ' + access_token
     }
-  }).then((resp) => {
+  }).then(async (resp) => {
+    const rows = await fetchUsers();
+
+    let userDataHTML = '<h2>User Data:</h2>';
+    userDataHTML += '<ul>';
+    rows.forEach(row => {
+      userDataHTML += `<li>ID: ${row.id}, Name: ${row.name}, Joined: ${row.joined}, Last Visit: ${row.lastvisit}, Counter: ${row.counter}</li>`;
+    });
+    userDataHTML += '</ul>';
+
     res.send(`<h2>${resp.data.login}</h2>
     <h2>${resp.data.name}</h2>
     <h2>${resp.data.bio}</h2>
     <h2>FOLLOWERS: ${resp.data.followers}</h2>
-    <br><a href="/ghsignout">Sign Out</a>`);
+    <br><a href="/ghsignout">Sign Out</a>
+    ${userDataHTML}`);
   }).catch((error) => {
     res.redirect('/');
   });
@@ -85,7 +120,7 @@ app.get('/signin', (req, res) => {
   } else {
     var loggedUser
     var oauth2 = google.oauth2({ auth: oAuth2Client, version: 'v2' })
-    oauth2.userinfo.v2.me.get(function (err, result) {
+    oauth2.userinfo.v2.me.get(async function (err, result) {
       if (err) {
         console.log('BLAD!')
         console.log(err)
@@ -93,9 +128,23 @@ app.get('/signin', (req, res) => {
         loggedUser = result.data.name
         console.log(loggedUser)
       }
-      res.send('Zalogowany: '
-        .concat(loggedUser, '<img src="', result.data.picture, '"height="23" width="23">')
-        + '<br><a href="/signout">Sign Out</a>')
+      const rows = await fetchUsers();
+
+      let userDataHTML = '<h2>User Data:</h2>';
+      userDataHTML += '<ul>';
+      rows.forEach(row => {
+        userDataHTML += `<li>ID: ${row.id}, Name: ${row.name}, Joined: ${row.joined}, Last Visit: ${row.lastvisit}, Counter: ${row.counter}</li>`;
+      });
+      userDataHTML += '</ul>';
+
+      const responseContent = `
+    <p>Zalogowany: ${loggedUser}<img src="${result.data.picture}" height="23" width="23"></p>
+    <p><a href="/signout">Sign Out</a></p>
+    ${userDataHTML}`;
+
+      // Send the response
+      res.send(responseContent);
+
     })
   }
 })
