@@ -132,7 +132,7 @@ app.get('/signin', (req, res) => {
 
       let userDataHTML = '<h2>User Data:</h2>';
       userDataHTML += '<ul>';
-      rows.forEach(row => {
+      rows?.forEach(row => {
         userDataHTML += `<li>ID: ${row.id}, Name: ${row.name}, Joined: ${row.joined}, Last Visit: ${row.lastvisit}, Counter: ${row.counter}</li>`;
       });
       userDataHTML += '</ul>';
