@@ -37,6 +37,15 @@ app.get('/success', function (req, res) {
       Authorization: 'token ' + access_token
     }
   }).then(async (resp) => {
+    loggedUser = resp.data.login
+    const user = await findUserByName(loggedUser)
+    if(user) {
+      const r = await oldUser(user.id)
+      console.log("OLD_USER: ",r)
+    } else {
+      const r = await newUser(loggedUser)
+      console.log("NEW_USER: ",r)
+    }
     const rows = await fetchUsers();
 
     let userDataHTML = '<h2>User Data:</h2>';
@@ -70,7 +79,7 @@ app.get("/ghsignout", function (req, res) {
 const CLIENT_ID = OAuth2Data.web.client_id;
 const CLIENT_SECRET = OAuth2Data.web.client_secret;
 // SET [0] FOR DEPLOY
-const REDIRECT_URL = OAuth2Data.web.redirect_uris[1];
+const REDIRECT_URL = OAuth2Data.web.redirect_uris[0];
 
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL)
 var authed = false;
