@@ -5,28 +5,7 @@ const axios = require('axios')
 
 const app = express()
 
-const { Pool } = require("pg")
-const dotenv = require("dotenv")
-dotenv.config()
-
-const client = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: process.env.PGPORT,
-  ssl: true
-})
-
-const fetchUsers = async () => {
-  try {
-    const res = await client.query('SELECT * FROM users')
-    return res.rows
-  } catch (error) {
-    console.log(error)
-    return null
-  }
-}
+const { newUser, oldUser, findUserByName, fetchUsers, client } = require('./utils.js');
 
 const gh_id = "Ov23lijRmGqTt8kc0iKK"
 const gh_secret = "a18bf140fbe71c24ab823514ef5b44d116683d2e"
@@ -50,7 +29,7 @@ app.get('/github/callback', (req, res) => {
 })
 
 app.get('/success', function (req, res) {
-
+  console.log(access_token)
   axios({
     method: 'get',
     url: `https://api.github.com/user`,
@@ -63,7 +42,12 @@ app.get('/success', function (req, res) {
     let userDataHTML = '<h2>User Data:</h2>';
     userDataHTML += '<ul>';
     rows.forEach(row => {
-      userDataHTML += `<li>ID: ${row.id}, Name: ${row.name}, Joined: ${row.joined}, Last Visit: ${row.lastvisit}, Counter: ${row.counter}</li>`;
+      userDataHTML += `
+      <li>ID: ${row.id},
+       Name: ${row.name},
+        Joined: ${new Date(row.joined).toISOString()},
+         Last Visit: ${new Date(row.lastvisit).toISOString()},
+          Counter: ${row.counter}</li>`;
     });
     userDataHTML += '</ul>';
 
@@ -85,7 +69,8 @@ app.get("/ghsignout", function (req, res) {
 
 const CLIENT_ID = OAuth2Data.web.client_id;
 const CLIENT_SECRET = OAuth2Data.web.client_secret;
-const REDIRECT_URL = OAuth2Data.web.redirect_uris[0];
+// SET [0] FOR DEPLOY
+const REDIRECT_URL = OAuth2Data.web.redirect_uris[1];
 
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL)
 var authed = false;
@@ -124,14 +109,26 @@ app.get('/signin', (req, res) => {
         console.log(err)
       } else {
         loggedUser = result.data.name
-        console.log(loggedUser)
+        const user = await findUserByName(loggedUser)
+        if(user) {
+          const r = await oldUser(user.id)
+          console.log("OLD_USER: ",r)
+        } else {
+          const r = await newUser(loggedUser)
+          console.log("NEW_USER: ",r)
+        }
       }
       const rows = await fetchUsers();
 
       let userDataHTML = '<h2>User Data:</h2>';
       userDataHTML += '<ul>';
       rows?.forEach(row => {
-        userDataHTML += `<li>ID: ${row.id}, Name: ${row.name}, Joined: ${row.joined}, Last Visit: ${row.lastvisit}, Counter: ${row.counter}</li>`;
+        userDataHTML += `
+        <li>ID: ${row.id},
+         Name: ${row.name},
+          Joined: ${new Date(row.joined).toISOString()},
+           Last Visit: ${new Date(row.lastvisit).toISOString()},
+            Counter: ${row.counter}</li>`;
       });
       userDataHTML += '</ul>';
 
