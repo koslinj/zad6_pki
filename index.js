@@ -4,6 +4,8 @@ const OAuth2Data = require('./google_key.json')
 const axios = require('axios')
 
 const app = express()
+const ejs = require('ejs');
+app.set('view engine', 'ejs');
 
 const { newUser, oldUser, findUserByName, fetchUsers, client } = require('./utils.js');
 
@@ -39,33 +41,22 @@ app.get('/success', function (req, res) {
   }).then(async (resp) => {
     loggedUser = resp.data.login
     const user = await findUserByName(loggedUser)
-    if(user) {
+    if (user) {
       const r = await oldUser(user.id)
-      console.log("OLD_USER: ",r)
+      console.log("OLD_USER: ", r)
     } else {
       const r = await newUser(loggedUser)
-      console.log("NEW_USER: ",r)
+      console.log("NEW_USER: ", r)
     }
+    const userData = {
+      login: resp.data.login,
+      name: resp.data.name,
+      bio: resp.data.bio,
+      followers: resp.data.followers
+    };
     const rows = await fetchUsers();
 
-    let userDataHTML = '<h2>User Data:</h2>';
-    userDataHTML += '<ul>';
-    rows.forEach(row => {
-      userDataHTML += `
-      <li>ID: ${row.id},
-       Name: ${row.name},
-        Joined: ${new Date(row.joined).toISOString()},
-         Last Visit: ${new Date(row.lastvisit).toISOString()},
-          Counter: ${row.counter}</li>`;
-    });
-    userDataHTML += '</ul>';
-
-    res.send(`<h2>${resp.data.login}</h2>
-    <h2>${resp.data.name}</h2>
-    <h2>${resp.data.bio}</h2>
-    <h2>FOLLOWERS: ${resp.data.followers}</h2>
-    <br><a href="/ghsignout">Sign Out</a>
-    ${userDataHTML}`);
+    res.render('github', { userData, rows });
   }).catch((error) => {
     res.redirect('/');
   });
@@ -119,36 +110,21 @@ app.get('/signin', (req, res) => {
       } else {
         loggedUser = result.data.name
         const user = await findUserByName(loggedUser)
-        if(user) {
+        if (user) {
           const r = await oldUser(user.id)
-          console.log("OLD_USER: ",r)
+          console.log("OLD_USER: ", r)
         } else {
           const r = await newUser(loggedUser)
-          console.log("NEW_USER: ",r)
+          console.log("NEW_USER: ", r)
         }
       }
+      const userData = {
+        name: loggedUser,
+        image: result.data.picture
+      };
       const rows = await fetchUsers();
 
-      let userDataHTML = '<h2>User Data:</h2>';
-      userDataHTML += '<ul>';
-      rows?.forEach(row => {
-        userDataHTML += `
-        <li>ID: ${row.id},
-         Name: ${row.name},
-          Joined: ${new Date(row.joined).toISOString()},
-           Last Visit: ${new Date(row.lastvisit).toISOString()},
-            Counter: ${row.counter}</li>`;
-      });
-      userDataHTML += '</ul>';
-
-      const responseContent = `
-    <p>Zalogowany: ${loggedUser}<img src="${result.data.picture}" height="23" width="23"></p>
-    <p><a href="/signout">Sign Out</a></p>
-    ${userDataHTML}`;
-
-      // Send the response
-      res.send(responseContent);
-
+      res.render('google', { userData, rows });
     })
   }
 })
