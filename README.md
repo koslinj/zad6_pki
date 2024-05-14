@@ -1,4 +1,5 @@
-# ZADANIE 6 -> CHMURY i AUTORYZACJA
+# ZADANIE 6 -> Chmury i Autoryzacja
+# ZADANIE 7 -> Zarządzanie bazą danych w platformie chmurowej
 - Strona: https://zad6-pki.onrender.com/
 - Repozytorium: https://github.com/koslinj/zad6_pki
 
@@ -11,6 +12,10 @@ Plik JavaScript z określonymi punktami końcowymi służącymi do:
 - wyświetlenia strony głównej
 - logowania
 - wyświetlania danych o użytkowniku
+  
+Do wyświetlania stron wykorzystywane są:
+- EJS template engine
+- Bootstrap
 
 ## Aby uruchomić
 - instalacja bibliotek:
