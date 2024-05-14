@@ -75,12 +75,16 @@ const REDIRECT_URL = OAuth2Data.web.redirect_uris[0];
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL)
 var authed = false;
 
+// app.get('/', (req, res) => {
+//   res.send(
+//     '<h1>HOME PAGE</h1><a href="/signin">Sign In with Google</a><br/>'
+//     +
+//     `<a href="https://github.com/login/oauth/authorize?client_id=${gh_id}&prompt=consent">Github Login</a>`
+//   );
+// });
 app.get('/', (req, res) => {
-  res.send(
-    '<h1>HOME PAGE</h1><a href="/signin">Sign In with Google</a><br/>'
-    +
-    `<a href="https://github.com/login/oauth/authorize?client_id=${gh_id}&prompt=consent">Github Login</a>`
-  );
+  // Pass any necessary data to the template
+  res.render('home', { gh_id: gh_id });
 });
 
 app.get('/signout', (req, res) => {
